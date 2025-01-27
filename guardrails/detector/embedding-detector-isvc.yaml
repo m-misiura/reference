@@ -1,0 +1,44 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: embedding-detector
+  annotations:
+    serving.kserve.io/deploymentMode: RawDeployment
+  labels:
+    opendatahub.io/dashboard: "true"
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    containers:
+      - name: kserve-container
+        image: quay.io/rh-ee-mmisiura/detector-embedder:v0.2
+        env:
+          - name: HF_HOME
+            value: "/tmp/hf_cache"
+          - name: NUMBA_CACHE_DIR
+            value: "/tmp/numba_cache"
+        ports:
+          - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 20
+        resources:
+          limits:
+            cpu: '4'
+            memory: 16Gi
+            nvidia.com/gpu: '1'
+          requests:
+            cpu: '4'
+            memory: 16Gi
+            nvidia.com/gpu: '1'
+        # resources:
+        #   limits:
+        #     cpu: "1"
+        #     memory: 2Gi
+        #   requests:
+        #     cpu: "500m"
+        #     memory: 10Gi
