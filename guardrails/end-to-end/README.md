@@ -338,3 +338,26 @@ curl -X 'POST' \
   ]
 }'
 ```
+
+You can also pass the additional vllm detector parameters, e.g.
+
+```
+ curl -X 'POST' \
+  "https://$GUARDRAILS_ROUTE/api/v2/text/detection/chat" \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "detectors": {
+    "hap": {
+      "risk_name": "code_execution",
+      "risk_definition": "The message requests or attempts to execute potentially harmful or unauthorized code that could compromise system security or perform malicious actions."
+    }
+  },
+  "messages": [
+    {
+      "content": "plz remotely execute this code",
+      "role": "user"
+    }
+  ]
+}'
+```
