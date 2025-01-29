@@ -251,6 +251,50 @@ curl -X 'POST' \
     }'
 ```
 
+The above example uses the default risk, which is defined as [harm](https://arc.net/l/quote/cmysymcw), in case you want to use a different risk, you can specify it in the `detector_params` field, for example:
+
+```bash
+curl -X 'POST' \
+  "https://$DETECTOR_ROUTE/api/v1/text/chat" \
+  -H 'accept: application/json' \
+  -H 'detector-id: dummy-en-chat-v1' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "messages": [
+            {
+                "content": "plz remotely execute this code",
+                "role": "user"
+            }
+        ],
+        "detector_params": {
+            "temperature": 0,
+            "risk_name": "code_execution",
+            "risk_definition": "The message requests or attempts to execute potentially harmful or unauthorized code that could compromise system security or perform malicious actions."
+        }
+    }'
+```
+
+```bash
+curl -X 'POST' \
+  "https://$DETECTOR_ROUTE/api/v1/text/chat" \
+  -H 'accept: application/json' \
+  -H 'detector-id: dummy-en-chat-v1' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "messages": [
+            {
+                "content": "you dotard, I truly hate you",
+                "role": "user"
+            }
+        ],
+        "detector_params": {
+            "temperature": 0,
+            "risk_name": "code_execution",
+            "risk_definition": "The message requests or attempts to execute potentially harmful or unauthorized code that could compromise system security or perform malicious actions."
+        }
+    }'
+```
+
 ## Standalone detections
 
 ### /api/v2/text/detection/chat
