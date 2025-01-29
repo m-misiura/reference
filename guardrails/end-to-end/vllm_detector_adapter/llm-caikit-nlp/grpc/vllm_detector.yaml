@@ -51,35 +51,30 @@ spec:
             - mountPath: "/mnt/models/"
               name: model-volume
         - name: vllm-guardrails-adapter
-          image: quay.io/rh-ee-mmisiura/vllm-detector-adapter:init_folder_v5
+          image: quay.io/rh-ee-mmisiura/vllm-detector-adapter:3ad5b31
           command:
             - bash
             - -c
             - |
-              # Create the site-packages directory in the target Python path
-              SITE_PACKAGES="/shared_packages/lib/python3.12/site-packages"
-              echo "Creating directory: ${SITE_PACKAGES}"
-              mkdir -p ${SITE_PACKAGES}
+              echo "Creating directory structure..."
+              mkdir -p /shared_packages/app
               
-              echo "Copying packages from source site-packages..."
-              cp -r /opt/app-root/lib/python3.12/site-packages/* ${SITE_PACKAGES}/
+              echo "Copying packages..."
+              cp -r /app/target_packages/* /shared_packages/app/
               
-              echo "Copying vllm_detector_adapter..."
-              if [ -d "/build/vllm_detector_adapter" ]; then
-                cp -r /build/vllm_detector_adapter ${SITE_PACKAGES}/
-              fi
-              
-              echo "Contents of ${SITE_PACKAGES}:"
-              ls -la ${SITE_PACKAGES}
+              echo "Verifying contents..."
+              ls -la /shared_packages/app
           env:
             - name: MODEL_NAME
               value: ibm-granite/granite-guardian-3.1-2b
+            - name: SHARED_PACKAGE_PATH
+              value: /shared_packages/app
           volumeMounts:
             - name: shared-packages
               mountPath: /shared_packages
       containers:
         - name: vllm-server
-          image: quay.io/opendatahub/vllm:fast-ibm-26564a0
+          image: quay.io/opendatahub/vllm:fast-ibm-a58bf32
           resources:
             limits:
               cpu: '1'
@@ -95,7 +90,7 @@ spec:
             - name: PORT
               value: "3000"
             - name: PYTHONPATH
-              value: /shared_packages/lib/python3.12/site-packages
+              value: /shared_packages/app
             - name: HF_HUB_OFFLINE
               value: "0"
             - name: HF_HOME
@@ -107,10 +102,10 @@ spec:
               echo "Python version:"
               python3 --version
               echo "Current PYTHONPATH: $PYTHONPATH"
-              echo "Contents of site-packages directory:"
-              ls -la /shared_packages/lib/python3.12/site-packages
+              echo "Contents of shared packages directory:"
+              ls -la /shared_packages/app
               echo "Starting server..."
-              PYTHONPATH=/shared_packages/lib/python3.12/site-packages python3 -m vllm_detector_adapter.api_server \
+              python3 -m vllm_detector_adapter.api_server \
                 --model ${MODEL_NAME} \
                 --model-type granite_guardian \
                 --dtype half \
